@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SimplePaint</string>
+    <string name="cancel">Cancelar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="btn_color">Cor</string>
+    <string name="btn_square">Quadrado</string>
+    <string name="btn_cricle">Sou circulo</string>
+    <string name="btn_path">Desenhar</string>
+</resources>
