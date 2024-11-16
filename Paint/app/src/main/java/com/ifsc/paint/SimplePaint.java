@@ -5,10 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.text.DynamicLayout;
-import android.text.StaticLayout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,53 +12,47 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+
 public class SimplePaint extends View {
-    final Paint paint;
-    final Square square;
-    final Path path;
-    final Circle circle;
-    Shapes drawShape;
+    ArrayList<Layer> layers;
+    Shapes shape;
+    CoordenadasTraco coordinates;
+    Layer previewLayer;
 
     public SimplePaint(Context context, @Nullable AttributeSet attributeSet) {
         super(context, attributeSet);
-        this.paint = new Paint();
-        this.square = new Square();
-        this.circle = new Circle();
-        this.path = new Path();
-        this.drawShape = Shapes.Path;
+        this.layers = new ArrayList<>();
+        this.layers.add(new Layer());
+        this.previewLayer = new Layer();
+        this.shape = Shapes.Finger;
+        setupLayer(this.previewLayer);
+        this.previewLayer.paint.setColor(Color.WHITE);
 
-        initPaint();
+        setupLayer(getCurrentLayer());
     }
 
-    private void initPaint() {
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(6f);
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.STROKE);
+    private void setupLayer(Layer layer) {
+        layer.paint.setColor(Color.WHITE);
+        layer.paint.setStrokeWidth(6f);
+        layer.paint.setAntiAlias(true);
+        layer.paint.setStyle(Paint.Style.STROKE);
+    }
+
+    public void clear(){
+        getCurrentLayer().path.reset();
+        invalidate();
     }
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.save();
-        switch (this.drawShape) {
-            case Square:
-                canvas.drawRect(square.getSquareRect(), paint);
-                break;
-            case Path:
-                canvas.drawPath(path, paint);
-                break;
-            case Circle:
-                canvas.drawCircle(
-                        circle.cX,
-                        circle.cY,
-                        circle.radius,
-                        paint
-                );
-                break;
+        for(Layer l : layers){
+            canvas.drawPath(l.path, l.paint);
         }
-        canvas.restore();
+
+        canvas.drawPath(previewLayer.path, previewLayer.paint);
     }
 
     @Override
@@ -72,45 +62,79 @@ public class SimplePaint extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                switch (this.drawShape) {
-                    case Square:
-                        this.square.setStart(x, y);
-                        this.square.setEnd(x, y);
-                        break;
-                    case Path:
-                        this.path.moveTo(x, y);
-                        break;
-                    case Circle:
-                        this.circle.setStart(x, y);
-                        break;
-                }
-                invalidate();
+                addLayer();
+                getCurrentLayer().path.moveTo(x, y);
+
+                coordinates = new CoordenadasTraco();
+                coordinates.x = x;
+                coordinates.y = y;
                 return true;
             case MotionEvent.ACTION_MOVE:
-                switch (this.drawShape) {
-                    case Square:
-                        this.square.setEnd(x, y);
+                switch (this.shape) {
+                    case Finger:
+                        getCurrentLayer().path.lineTo(x, y);
                         break;
-                    case Path:
-                        this.path.lineTo(x, y);
+                    case Square:
+                        getCurrentLayer().path.addRect(
+                                coordinates.x,
+                                coordinates.y,
+                                x,
+                                y,
+                                Path.Direction.CW
+                        );
                         break;
                     case Circle:
-                        this.circle.setRadius(x, y);
+                        getCurrentLayer().path.reset();
+                        getCurrentLayer().path.moveTo(coordinates.x, coordinates.y);
+
+                        previewLayer.clear();
+                        previewLayer.path.moveTo(coordinates.x, coordinates.y);
+                        previewLayer.path.lineTo(x, y);
+
+                        float radius = (float) Math.sqrt(
+                                Math.pow(coordinates.x - x, 2) +
+                                        Math.pow(coordinates.y - y, 2)
+                        );
+
+                        getCurrentLayer().path.addCircle(x, y, radius, Path.Direction.CW);
                         break;
                 }
                 invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
-                if (this.drawShape.equals(Shapes.Path)) {
-                    path.lineTo(x, y);
-                }
-                invalidate();
-                return true;
+                previewLayer.path.reset();
+                break;
+            default:
+                return false;
         }
-        return false;
+        invalidate();
+        return true;
     }
 
-    public void setDrawType(Shapes drawShape) {
-        this.drawShape = drawShape;
+    private Layer getCurrentLayer() {
+        return this.layers.get(layers.size() - 1);
+    }
+
+    public void setColor(int color){
+        this.layers.add(new Layer(getCurrentLayer().paint));
+        getCurrentLayer().paint.setColor(color);
+    }
+
+    private void addLayer() {
+        this.layers.add(new Layer(getCurrentLayer().paint));
+        invalidate();
+    }
+
+    public void setShape(Shapes shape) {
+        this.shape = shape;
+    }
+
+    public void undo(){
+        if(this.layers.size() > 1){
+            this.layers.remove(this.layers.size() - 1);
+            invalidate();
+        }else{
+            clear();
+        }
     }
 }

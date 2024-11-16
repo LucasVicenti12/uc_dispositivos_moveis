@@ -1,7 +1,7 @@
 package com.ifsc.paint;
 
 public enum Shapes {
-    Path,
+    Finger,
     Square,
     Circle
 }
