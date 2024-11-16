@@ -12,34 +12,34 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.skydoves.colorpickerview.ColorEnvelope;
+import com.skydoves.colorpickerview.ColorPickerDialog;
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
+
 import java.util.ArrayList;
 
 public class SimplePaint extends View {
     ArrayList<Layer> layers;
     Shapes shape;
     CoordenadasTraco coordinates;
-    Layer previewLayer;
 
     public SimplePaint(Context context, @Nullable AttributeSet attributeSet) {
         super(context, attributeSet);
         this.layers = new ArrayList<>();
         this.layers.add(new Layer());
-        this.previewLayer = new Layer();
         this.shape = Shapes.Finger;
-        setupLayer(this.previewLayer);
-        this.previewLayer.paint.setColor(Color.WHITE);
 
         setupLayer(getCurrentLayer());
     }
 
     private void setupLayer(Layer layer) {
-        layer.paint.setColor(Color.WHITE);
+        layer.paint.setColor(Color.BLACK);
         layer.paint.setStrokeWidth(6f);
         layer.paint.setAntiAlias(true);
         layer.paint.setStyle(Paint.Style.STROKE);
     }
 
-    public void clear(){
+    public void clear() {
         getCurrentLayer().path.reset();
         invalidate();
     }
@@ -48,11 +48,9 @@ public class SimplePaint extends View {
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
 
-        for(Layer l : layers){
+        for (Layer l : layers) {
             canvas.drawPath(l.path, l.paint);
         }
-
-        canvas.drawPath(previewLayer.path, previewLayer.paint);
     }
 
     @Override
@@ -87,10 +85,6 @@ public class SimplePaint extends View {
                         getCurrentLayer().path.reset();
                         getCurrentLayer().path.moveTo(coordinates.x, coordinates.y);
 
-                        previewLayer.clear();
-                        previewLayer.path.moveTo(coordinates.x, coordinates.y);
-                        previewLayer.path.lineTo(x, y);
-
                         float radius = (float) Math.sqrt(
                                 Math.pow(coordinates.x - x, 2) +
                                         Math.pow(coordinates.y - y, 2)
@@ -102,7 +96,6 @@ public class SimplePaint extends View {
                 invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
-                previewLayer.path.reset();
                 break;
             default:
                 return false;
@@ -115,7 +108,7 @@ public class SimplePaint extends View {
         return this.layers.get(layers.size() - 1);
     }
 
-    public void setColor(int color){
+    public void setColor(int color) {
         this.layers.add(new Layer(getCurrentLayer().paint));
         getCurrentLayer().paint.setColor(color);
     }
@@ -129,12 +122,42 @@ public class SimplePaint extends View {
         this.shape = shape;
     }
 
-    public void undo(){
-        if(this.layers.size() > 1){
+    public void undo() {
+        if (this.layers.size() > 1) {
             this.layers.remove(this.layers.size() - 1);
             invalidate();
-        }else{
+        } else {
             clear();
         }
+    }
+
+    public void resetPaint() {
+        this.layers = new ArrayList<>();
+        this.layers.add(new Layer());
+        this.shape = Shapes.Finger;
+
+        setupLayer(getCurrentLayer());
+
+        invalidate();
+    }
+
+    public void setColorPicker() {
+        new ColorPickerDialog.Builder(this.getContext())
+                .setTitle(R.string.chage_color_dialog)
+                .setPreferenceName("MyColorPicker")
+                .setPositiveButton(
+                        getContext().getString(R.string.confirm),
+                        (ColorEnvelopeListener) this::setLayoutColor
+                ).setNegativeButton(
+                        getContext().getString(R.string.confirm),
+                        (dialog, i) -> dialog.dismiss()
+                ).attachAlphaSlideBar(true)
+                .attachBrightnessSlideBar(true)
+                .setBottomSpace(12)
+                .show();
+    }
+
+    public void setLayoutColor(ColorEnvelope color, boolean fromUser) {
+        this.setColor(color.getColor());
     }
 }

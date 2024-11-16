@@ -6,4 +6,5 @@
     <string name="btn_square">Quadrado</string>
     <string name="btn_cricle">Sou circulo</string>
     <string name="btn_path">Desenhar</string>
+    <string name="chage_color_dialog">Mudar cor do pincel</string>
 </resources>

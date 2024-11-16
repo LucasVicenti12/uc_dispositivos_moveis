@@ -13,10 +13,6 @@ import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
 public class MainActivity extends AppCompatActivity {
-    ImageButton btnImCircle;
-//    Button btnColor;
-//    Button btnSquare;
-//    Button btnPath;
     SimplePaint simplePaint;
 
     @Override
@@ -26,47 +22,19 @@ public class MainActivity extends AppCompatActivity {
 
         simplePaint = findViewById(R.id.simplePaint);
 
-        btnImCircle = findViewById(R.id.circle_button);
+        final ImageButton btnImCircle = findViewById(R.id.circle_button);
+        final ImageButton btnImSquare = findViewById(R.id.square_button);
+        final ImageButton btnPencil = findViewById(R.id.finger_button);
+        final ImageButton btnChangeColor = findViewById(R.id.change_color_button);
+        final ImageButton btnResetPaint = findViewById(R.id.clear_button);
+        final ImageButton btnUndoPaint = findViewById(R.id.undo_button);
 
         btnImCircle.setOnClickListener(view -> simplePaint.setShape(Shapes.Circle));
+        btnImSquare.setOnClickListener(view -> simplePaint.setShape(Shapes.Square));
+        btnPencil.setOnClickListener(view -> simplePaint.setShape(Shapes.Finger));
+        btnResetPaint.setOnClickListener(view -> simplePaint.resetPaint());
+        btnUndoPaint.setOnClickListener(view -> simplePaint.undo());
 
-//        btnColor = findViewById(R.id.btn_color);
-//        btnSquare = findViewById(R.id.btn_square);
-//        btnImCircle = findViewById(R.id.btn_circle);
-//        btnPath = findViewById(R.id.btn_path);
-//        simplePaint = findViewById(R.id.simplePaint);
-//
-//        btnColor.setOnClickListener(view -> {
-//            new ColorPickerDialog.Builder(MainActivity.this)
-//                    .setTitle("Color picker dialog")
-//                    .setPreferenceName("MyColorPicker")
-//                    .setPositiveButton(
-//                            getString(R.string.confirm),
-//                            (ColorEnvelopeListener) (envelope, fromUser) -> setLayoutColor(envelope)
-//                    ).setNegativeButton(
-//                            getString(R.string.cancel),
-//                            (DialogInterface.OnClickListener) (dialogInterface, i) -> dialogInterface.dismiss()
-//                    ).attachAlphaSlideBar(true)
-//                    .attachBrightnessSlideBar(true)
-//                    .setBottomSpace(12)
-//                    .show();
-//        });
-//
-//        btnSquare.setOnClickListener(view -> {
-//            simplePaint.setShape(Shapes.Square);
-//        });
-//
-//        btnImCircle.setOnClickListener(view -> {
-//            simplePaint.setShape(Shapes.Circle);
-//        });
-//
-//        btnPath.setOnClickListener(view -> {
-//            simplePaint.setShape(Shapes.Finger);
-//        });
-    }
-
-    public void setLayoutColor(ColorEnvelope color){
-        simplePaint.setColor(color.getColor());
-//        btnColor.setBackgroundColor(color.getColor());
+        btnChangeColor.setOnClickListener(view -> simplePaint.setColorPicker());
     }
 }
