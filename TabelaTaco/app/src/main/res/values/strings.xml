@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TabelaTaco</string>
+    <string name="importacao_concluida">Importação de arquivos incluida com sucesso</string>
+    <string name="erro_importacao">Ocorreu um erro durante a importação dos arquivos</string>
+    <string name="default_text">Default</string>
+    <string name="search_food">Buscar alimento...</string>
+    <string name="prepare_label">Preparo</string>
+</resources>
